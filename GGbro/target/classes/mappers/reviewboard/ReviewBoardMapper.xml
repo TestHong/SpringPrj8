@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kooprogramming.ggbro.reviewboard.repository.IReviewBoardDAO">
+
+	<resultMap id="BoardMap" type="com.kooprogramming.ggbro.reviewboard.domain.ReviewBoardVO">
+		<id property="boardId" column="board_id" />
+		<result property="writer" column="writer" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<result property="writeDate" column="write_date" />
+		<result property="viewCount" column="view_count" />
+		
+		<result property="fileId" column="file_id" />
+		<result property="fileName" column="file_name" />
+		<result property="fileSize" column="file_size" />
+		<result property="fileContentType" column="file_content_type" />
+	</resultMap>
+	
+	<resultMap id="FileMap" type="com.kooprogramming.ggbro.reviewboard.domain.ReviewBoardUploadFileVO">
+		<id property="fileId" column="file_id" />
+		<result property="boardId" column="board_id" />
+		<result property="fileName" column="file_name" />
+		<result property="fileSize" column="file_size" />
+		<result property="fileContentType" column="file_content_type" />
+		<result property="fileData" column="file_data" />
+	</resultMap>
+	
+	<!-- 게시글 등록 -->
+	<insert id="insertArticle">
+		<![CDATA[
+			INSERT INTO 
+			REVIEW_BOARD 
+			(WRITER, TITLE, CONTENT) 
+			VALUES 
+			(#{writer}, #{title}, #{content})
+		]]>
+	</insert>
+	
+	<!-- 게시글 파일 첨부 -->
+	<insert id="insertFileData">
+	<![CDATA[
+		INSERT INTO 
+		REVIEW_BOARD_UPLOAD_FILE 
+			(BOARD_ID, FILE_NAME, FILE_SIZE, FILE_CONTENT_TYPE, FILE_DATA) 
+		VALUES 
+			(#{boardId}, #{fileName}, #{fileSize}, #{fileContentType}, #{fileData})
+	]]>
+	</insert>
+	
+	<!-- 최대 글번호 읽어오기 -->
+	<select id="selectMaxArticleNo" resultType="int">
+	<![CDATA[
+		SELECT 
+			MAX(BOARD_ID) 
+		FROM REVIEW_BOARD 
+	]]>
+	</select>
+
+	<select id="selectMaxFileId" resultType="int">
+	<![CDATA[
+		SELECT 
+			MAX(FILE_ID) 
+		FROM REVIEW_BOARD_UPLOAD_FILE
+	]]>
+	</select>
+	
+	<!-- 게시글 목록 보기 -->
+	<select id="selectArticleList" resultMap="BoardMap">
+	<![CDATA[
+		SELECT 
+			B.BOARD_ID				AS board_id, 
+			WRITER, 
+			TITLE, 
+			CONTENT, 
+			WRITE_DATE, 
+			R.FILE_ID			AS file_id, 
+			R.FILE_NAME			AS file_name, 
+			R.FILE_SIZE			AS file_size,
+			R.FILE_CONTENT_TYPE	AS file_content_type
+		FROM REVIEW_BOARD B
+		LEFT OUTER JOIN REVIEW_BOARD_UPLOAD_FILE R 
+			ON B.BOARD_ID=R.BOARD_ID
+		ORDER BY board_id DESC
+	]]>
+	</select>
+	
+	<!-- 게시글  보기 -->
+	<select id="selectArticle" resultMap="BoardMap">
+	<![CDATA[
+		SELECT 
+			B.BOARD_ID				AS board_id, 
+			WRITER, 
+			TITLE, 
+			CONTENT, 
+			WRITE_DATE, 
+			R.FILE_ID			AS file_id, 
+			R.FILE_NAME			AS file_name, 
+			R.FILE_SIZE			AS file_size,
+			R.FILE_CONTENT_TYPE	AS file_content_type
+		FROM REVIEW_BOARD B 
+		LEFT OUTER JOIN REVIEW_BOARD_UPLOAD_FILE R 
+			ON B.BOARD_ID=R.BOARD_ID 
+		WHERE B.BOARD_ID=#{boardId}
+	]]>
+	</select>
+	
+	<!-- 파일 조회 -->
+	<select id="getFile" resultMap="FileMap">
+	<![CDATA[
+		SELECT 
+			*
+		FROM REVIEW_BOARD_UPLOAD_FILE 
+		WHERE FILE_ID=#{fileId}
+	]]>
+	</select>
+	
+</mapper>
+
+
+
+
